@@ -5,6 +5,15 @@
 import streamlit as st
 import cv2
 import mediapipe as mp
+from mediapipe.python.solutions import pose as mp_pose
+from mediapipe.python.solutions import drawing_utils as mp_drawing
+
+# Fallback for older code
+if not hasattr(mp, 'solutions'):
+    mp.solutions = type('Solutions', (), {
+        'pose': mp_pose,
+        'drawing_utils': mp_drawing
+    })()
 import numpy as np
 import tempfile
 import os
@@ -1709,3 +1718,4 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
