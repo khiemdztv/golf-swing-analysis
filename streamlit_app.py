@@ -406,24 +406,7 @@ def detect_view_advanced(pose_data):
     return final_view, debug_info
 
 def extract_pose_landmarks(video_path):
-    # MediaPipe compatibility for 0.10.30+
-    try:
-        mp_pose = mp.solutions.pose
-        mp_drawing = mp.solutions.drawing_utils
-        mp_drawing_styles = mp.solutions.drawing_styles
-    except AttributeError:
-        # MediaPipe 0.10.30+ removed solutions module
-        try:
-            from mediapipe.python.solutions import pose as mp_pose_module
-            from mediapipe.python.solutions import drawing_utils as mp_drawing_module
-            from mediapipe.python.solutions import drawing_styles as mp_drawing_styles_module
-            mp_pose = mp_pose_module
-            mp_drawing = mp_drawing_module
-            mp_drawing_styles = mp_drawing_styles_module
-        except (ImportError, ModuleNotFoundError):
-            st.error("❌ MediaPipe không tương thích. Vui lòng kiểm tra phiên bản!")
-            return None, None, 'side', {}
-    
+    mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
         static_image_mode=False,
         model_complexity=MODEL_COMPLEXITY,
@@ -488,6 +471,7 @@ def extract_pose_landmarks(video_path):
         debug_info = []
     
     return pose_data, effective_fps, detected_view, debug_info
+
 def extract_216_features(pose_data, fps):
     if pose_data is None or len(pose_data) == 0:
         return None
@@ -1725,11 +1709,4 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
-
-
-
-
-
-
-
 
