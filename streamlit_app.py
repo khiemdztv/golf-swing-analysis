@@ -5,6 +5,10 @@
 import streamlit as st
 import cv2
 import mediapipe as mp
+# Fix for MediaPipe 0.10.30+
+if not hasattr(mp, 'solutions'):
+    import mediapipe.solutions as solutions
+    mp.solutions = solutions
 import numpy as np
 import tempfile
 import os
@@ -1709,6 +1713,7 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
