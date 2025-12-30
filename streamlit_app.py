@@ -5,22 +5,6 @@
 import streamlit as st
 import cv2
 import mediapipe as mp
-if not hasattr(mp, 'solutions'):
-    try:
-        mp_pose = mp.solutions.pose
-        mp_drawing = mp.solutions.drawing_utils
-        mp_drawing_styles = mp.solutions.drawing_styles
-    except AttributeError:
-    # Fallback for newer mediapipe versions
-        import mediapipe.python.solutions.pose as mp_pose
-        import mediapipe.python.solutions.drawing_utils as mp_drawing
-        import mediapipe.python.solutions.drawing_styles as mp_drawing_styles
-    class Solutions:
-        pose = mp_pose
-        drawing_utils = mp_drawing
-        drawing_styles = mp_drawing_styles
-    
-    mp.solutions = Solutions()
 import numpy as np
 import tempfile
 import os
@@ -1725,6 +1709,7 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
