@@ -1,6 +1,6 @@
 streamlit
 opencv-python-headless
-mediapipe
+mediapipe<0.10.30
 numpy
 plotly
 protobuf
@@ -8,3 +8,4 @@ scipy
 scikit-learn
 joblib
 pandas
+
