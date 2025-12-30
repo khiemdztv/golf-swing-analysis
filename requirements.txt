@@ -1,11 +1,12 @@
 streamlit
 opencv-python-headless
-mediapipe==0.10.9
+mediapipe
 numpy
 scipy
 scikit-learn
 joblib
 pandas
 plotly
+
 
 
