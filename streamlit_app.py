@@ -18,6 +18,8 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import json
 from datetime import datetime
+os.environ['MEDIAPIPE_DISABLE_GPU'] = '1'
+os.environ['MEDIAPIPE_CACHE_DIR'] = tempfile.gettempdir()
 
 # ===================================================== 
 # CẤU HÌNH TRANG
@@ -1709,4 +1711,5 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
