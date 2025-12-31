@@ -21,54 +21,71 @@ from datetime import datetime
 os.environ['MEDIAPIPE_DISABLE_GPU'] = '1'
 os.environ['MEDIAPIPE_CACHE_DIR'] = tempfile.gettempdir()
 # ============ FIX MediaPipe Permission Error ============
-MEDIAPIPE_CACHE_DIR = os.path.join(tempfile.gettempdir(), 'mediapipe')
+MEDIAPIPE_CACHE_DIR = os.path.join(tempfile.gettempdir(), 'mediapipe', 'modules', 'pose_landmark')
 os.makedirs(MEDIAPIPE_CACHE_DIR, exist_ok=True)
 
-def patch_mediapipe_download():
+# Patch sâu hơn - patch luôn hàm _download_oss_pose_landmark_model
+def patch_mediapipe_models():
     try:
-        from mediapipe.python.solutions import download_utils
-        import urllib.request
+        from mediapipe.python.solutions import pose as pose_module
         
-        original_download = download_utils.download_oss_model
+        # Lưu hàm gốc
+        original_download_func = pose_module._download_oss_pose_landmark_model
         
-        def patched_download(*args, **kwargs):
-            """Download model to temp directory instead of venv"""
-            # MediaPipe gọi: download_oss_model(model_path, model_url, *args)
-            if len(args) >= 2:
-                model_path = args[0]
-                model_url = args[1]
-            else:
-                # Fallback
-                return original_download(*args, **kwargs)
+        def patched_download_model(model_complexity):
+            """Download model to temp dir với quyền ghi"""
+            model_names = {
+                0: 'pose_landmark_lite.tflite',
+                1: 'pose_landmark_full.tflite', 
+                2: 'pose_landmark_heavy.tflite'
+            }
             
-            # Tạo đường dẫn mới trong thư mục temp
-            model_filename = os.path.basename(model_path)
-            temp_model_dir = os.path.join(MEDIAPIPE_CACHE_DIR, 'modules', 'pose_landmark')
-            os.makedirs(temp_model_dir, exist_ok=True)
-            temp_model_path = os.path.join(temp_model_dir, model_filename)
+            model_filename = model_names.get(model_complexity, 'pose_landmark_full.tflite')
+            temp_model_path = os.path.join(MEDIAPIPE_CACHE_DIR, model_filename)
             
-            # Download nếu chưa có
-            if not os.path.exists(temp_model_path):
+            # Nếu đã tồn tại thì return luôn
+            if os.path.exists(temp_model_path):
+                return temp_model_path
+            
+            # Download về temp directory
+            model_urls = {
+                'pose_landmark_lite.tflite': 'https://storage.googleapis.com/mediapipe-assets/pose_landmark_lite.tflite',
+                'pose_landmark_full.tflite': 'https://storage.googleapis.com/mediapipe-assets/pose_landmark_full.tflite',
+                'pose_landmark_heavy.tflite': 'https://storage.googleapis.com/mediapipe-assets/pose_landmark_heavy.tflite'
+            }
+            
+            model_url = model_urls.get(model_filename)
+            if model_url:
                 try:
                     with urllib.request.urlopen(model_url) as response:
                         with open(temp_model_path, 'wb') as out_file:
                             shutil.copyfileobj(response, out_file)
+                    return temp_model_path
                 except Exception as e:
-                    st.error(f"❌ Không tải được model: {e}")
-                    try:
-                        return original_download(*args, **kwargs)
-                    except:
-                        raise
+                    st.error(f"❌ Lỗi download model: {e}")
             
-            return temp_model_path
+            # Nếu fail hết thì thử dùng hàm gốc
+            try:
+                return original_download_func(model_complexity)
+            except PermissionError:
+                st.error("❌ Không có quyền ghi file. Vui lòng liên hệ admin!")
+                raise
         
-        download_utils.download_oss_model = patched_download
+        # Thay thế hàm
+        pose_module._download_oss_pose_landmark_model = patched_download_model
+        
+        # Monkey patch luôn biến MODEL_PATH trong pose module
+        pose_module.POSE_LANDMARK_LITE = os.path.join(MEDIAPIPE_CACHE_DIR, 'pose_landmark_lite.tflite')
+        pose_module.POSE_LANDMARK_FULL = os.path.join(MEDIAPIPE_CACHE_DIR, 'pose_landmark_full.tflite')
+        pose_module.POSE_LANDMARK_HEAVY = os.path.join(MEDIAPIPE_CACHE_DIR, 'pose_landmark_heavy.tflite')
         
     except Exception as e:
-        st.warning(f"⚠️ Không thể patch MediaPipe: {e}")
+        st.warning(f"⚠️ Không patch được MediaPipe: {e}")
 
-patch_mediapipe_download()
+patch_mediapipe_models()
 # ============ HẾT FIX ============
+
+# Code còn lại...
 
 # Code còn lại của bạn...
 # ===================================================== 
@@ -1761,6 +1778,7 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
