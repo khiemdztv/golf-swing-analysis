@@ -18,10 +18,6 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import json
 from datetime import datetime
-if not hasattr(mp, 'solutions'):
-    from mediapipe.python import solutions
-    mp.solutions = solutions
-
 # ===================================================== 
 # CẤU HÌNH TRANG
 # =====================================================
@@ -1712,4 +1708,5 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
