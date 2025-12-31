@@ -4,36 +4,25 @@
 
 import streamlit as st
 import cv2
-import mediapipe as mp
 import numpy as np
-import tempfile
 import os
-import joblib
-from scipy import stats
-from scipy.interpolate import interp1d
-import time
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-import pandas as pd
-import json
-from datetime import datetime
-os.environ['MEDIAPIPE_DISABLE_GPU'] = '1'
-os.environ['MEDIAPIPE_CACHE_DIR'] = tempfile.gettempdir()
+import tempfile
+import shutil
+import urllib.request  # ← PHẢI CÓ DÒNG NÀY
+
+# Import mediapipe SAU các import khác
+import mediapipe as mp
+
 # ============ FIX MediaPipe Permission Error ============
 MEDIAPIPE_CACHE_DIR = os.path.join(tempfile.gettempdir(), 'mediapipe', 'modules', 'pose_landmark')
 os.makedirs(MEDIAPIPE_CACHE_DIR, exist_ok=True)
 
-# Patch sâu hơn - patch luôn hàm _download_oss_pose_landmark_model
 def patch_mediapipe_models():
     try:
         from mediapipe.python.solutions import pose as pose_module
         
-        # Lưu hàm gốc
-        original_download_func = pose_module._download_oss_pose_landmark_model
-        
         def patched_download_model(model_complexity):
-            """Download model to temp dir với quyền ghi"""
+            """Download model to temp dir"""
             model_names = {
                 0: 'pose_landmark_lite.tflite',
                 1: 'pose_landmark_full.tflite', 
@@ -57,37 +46,39 @@ def patch_mediapipe_models():
             model_url = model_urls.get(model_filename)
             if model_url:
                 try:
+                    st.info(f"⬇️ Đang tải model {model_filename}...")
                     with urllib.request.urlopen(model_url) as response:
                         with open(temp_model_path, 'wb') as out_file:
                             shutil.copyfileobj(response, out_file)
+                    st.success(f"✅ Tải {model_filename} thành công!")
                     return temp_model_path
                 except Exception as e:
                     st.error(f"❌ Lỗi download model: {e}")
+                    raise PermissionError(f"Cannot download model to {temp_model_path}")
             
-            # Nếu fail hết thì thử dùng hàm gốc
-            try:
-                return original_download_func(model_complexity)
-            except PermissionError:
-                st.error("❌ Không có quyền ghi file. Vui lòng liên hệ admin!")
-                raise
+            raise FileNotFoundError(f"Model {model_filename} not found")
         
-        # Thay thế hàm
+        # Thay thế hàm - KHÔNG GỌI original_download_func nữa!
         pose_module._download_oss_pose_landmark_model = patched_download_model
         
-        # Monkey patch luôn biến MODEL_PATH trong pose module
-        pose_module.POSE_LANDMARK_LITE = os.path.join(MEDIAPIPE_CACHE_DIR, 'pose_landmark_lite.tflite')
-        pose_module.POSE_LANDMARK_FULL = os.path.join(MEDIAPIPE_CACHE_DIR, 'pose_landmark_full.tflite')
-        pose_module.POSE_LANDMARK_HEAVY = os.path.join(MEDIAPIPE_CACHE_DIR, 'pose_landmark_heavy.tflite')
-        
     except Exception as e:
-        st.warning(f"⚠️ Không patch được MediaPipe: {e}")
+        st.error(f"❌ Không patch được MediaPipe: {e}")
 
 patch_mediapipe_models()
 # ============ HẾT FIX ============
 
-# Code còn lại...
-
-# Code còn lại của bạn...
+import joblib
+from scipy import stats
+from scipy.interpolate import interp1d
+import time
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import pandas as pd
+import json
+from datetime import datetime
+os.environ['MEDIAPIPE_DISABLE_GPU'] = '1'
+os.environ['MEDIAPIPE_CACHE_DIR'] = tempfile.gettempdir()
 # ===================================================== 
 # CẤU HÌNH TRANG
 # =====================================================
@@ -1778,6 +1769,7 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
