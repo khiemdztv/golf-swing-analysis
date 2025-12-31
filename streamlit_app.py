@@ -21,11 +21,9 @@ from datetime import datetime
 os.environ['MEDIAPIPE_DISABLE_GPU'] = '1'
 os.environ['MEDIAPIPE_CACHE_DIR'] = tempfile.gettempdir()
 # ============ FIX MediaPipe Permission Error ============
-# Tạo thư mục tạm cho MediaPipe models
 MEDIAPIPE_CACHE_DIR = os.path.join(tempfile.gettempdir(), 'mediapipe')
 os.makedirs(MEDIAPIPE_CACHE_DIR, exist_ok=True)
 
-# Patch MediaPipe download function
 def patch_mediapipe_download():
     try:
         from mediapipe.python.solutions import download_utils
@@ -33,8 +31,16 @@ def patch_mediapipe_download():
         
         original_download = download_utils.download_oss_model
         
-        def patched_download(model_path, model_url):
+        def patched_download(*args, **kwargs):
             """Download model to temp directory instead of venv"""
+            # MediaPipe gọi: download_oss_model(model_path, model_url, *args)
+            if len(args) >= 2:
+                model_path = args[0]
+                model_url = args[1]
+            else:
+                # Fallback
+                return original_download(*args, **kwargs)
+            
             # Tạo đường dẫn mới trong thư mục temp
             model_filename = os.path.basename(model_path)
             temp_model_dir = os.path.join(MEDIAPIPE_CACHE_DIR, 'modules', 'pose_landmark')
@@ -49,21 +55,18 @@ def patch_mediapipe_download():
                             shutil.copyfileobj(response, out_file)
                 except Exception as e:
                     st.error(f"❌ Không tải được model: {e}")
-                    # Fallback: thử dùng đường dẫn gốc
                     try:
-                        return original_download(model_path, model_url)
+                        return original_download(*args, **kwargs)
                     except:
                         raise
             
             return temp_model_path
         
-        # Thay thế function download
         download_utils.download_oss_model = patched_download
         
     except Exception as e:
         st.warning(f"⚠️ Không thể patch MediaPipe: {e}")
 
-# Chạy patch
 patch_mediapipe_download()
 # ============ HẾT FIX ============
 
@@ -1758,6 +1761,7 @@ st.markdown("""
     <p style='color: #64748b; margin: 5px 0;'>Data Storm Competition 2025 | Hệ Thống Phân Tích Sinh Cơ Học Golf Bằng AI</p>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
