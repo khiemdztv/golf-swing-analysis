@@ -1,1 +1,1 @@
-web: pip uninstall -y opencv-python opencv-contrib-python opencv-python-headless || true && pip install opencv-python-headless==4.10.0.84 && pip install --no-deps mediapipe==0.10.14 && streamlit run streamlit_app.py --server.port=$PORT --server.address=0.0.0.0
+web: pip uninstall -y opencv-python opencv-contrib-python || true && pip install opencv-python-headless==4.10.0.84 && pip install mediapipe==0.10.14 && streamlit run streamlit_app.py --server.port=$PORT --server.address=0.0.0.0
