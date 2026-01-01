@@ -6,3 +6,9 @@ plotly==5.18.0
 scikit-learn==1.3.2
 scipy==1.11.4
 Pillow==10.2.0
+protobuf==3.20.3
+absl-py
+attrs
+flatbuffers
+matplotlib
+sounddevice
